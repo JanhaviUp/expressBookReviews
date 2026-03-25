@@ -2,37 +2,42 @@ const express = require('express');
 let router = express.Router();
 let books = require("./booksdb.js");
 
-// Get all books
-router.get('/', (req, res) => {
-  res.send(books);
+// Get all books (async)
+router.get('/', async (req, res) => {
+  return res.status(200).json(books);
 });
 
-// Get by ISBN
+// Get by ISBN (Promise)
 router.get('/isbn/:isbn', (req, res) => {
-  res.send(books[req.params.isbn]);
+  const isbn = req.params.isbn;
+
+  return new Promise((resolve, reject) => {
+    if (books[isbn]) {
+      resolve(books[isbn]);
+    } else {
+      reject("Book not found");
+    }
+  })
+    .then(data => res.json(data))
+    .catch(err => res.status(404).json({ message: err }));
 });
 
-// Get by author
-router.get('/author/:author', (req, res) => {
+// Get by Author (async)
+router.get('/author/:author', async (req, res) => {
   const author = req.params.author;
   const result = Object.values(books).filter(
     book => book.author === author
   );
-  res.send(result);
+  return res.json(result);
 });
 
-// Get by title
-router.get('/title/:title', (req, res) => {
+// Get by Title (async)
+router.get('/title/:title', async (req, res) => {
   const title = req.params.title;
   const result = Object.values(books).filter(
     book => book.title === title
   );
-  res.send(result);
-});
-
-// Get reviews
-router.get('/review/:isbn', (req, res) => {
-  res.send(books[req.params.isbn].reviews);
+  return res.json(result);
 });
 
 module.exports = router;
