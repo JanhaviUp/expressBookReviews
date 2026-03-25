@@ -1,51 +1,51 @@
 const express = require('express');
+const axios = require('axios'); // REQUIRED
 let router = express.Router();
 let books = require("./booksdb.js");
 
-// Get all books (async)
+// Get all books using async
 router.get('/', async (req, res) => {
   try {
-    return res.status(200).json(books);
-  } catch (err) {
+    const response = await axios.get('http://localhost:5000/');
+    return res.status(200).json(response.data);
+  } catch (error) {
     return res.status(500).json({ message: "Error fetching books" });
   }
 });
 
-// Get by ISBN (Promise)
+// Get by ISBN using Promise
 router.get('/isbn/:isbn', (req, res) => {
   const isbn = req.params.isbn;
 
-  new Promise((resolve, reject) => {
-    if (books[isbn]) {
-      resolve(books[isbn]);
-    } else {
-      reject("Book not found");
-    }
-  })
-    .then(data => res.json(data))
-    .catch(err => res.status(404).json({ message: err }));
+  axios.get(`http://localhost:5000/isbn/${isbn}`)
+    .then(response => res.json(response.data))
+    .catch(error => res.status(404).json({ message: "Book not found" }));
 });
 
-// Get by Author (async)
+// Get by Author using async
 router.get('/author/:author', async (req, res) => {
-  const author = req.params.author;
-
-  const result = Object.values(books).filter(
-    book => book.author === author
-  );
-
-  return res.json(result);
+  try {
+    const author = req.params.author;
+    const result = Object.values(books).filter(
+      book => book.author === author
+    );
+    return res.json(result);
+  } catch (error) {
+    return res.status(500).json({ message: "Error fetching author books" });
+  }
 });
 
-// Get by Title (async)
+// Get by Title using async
 router.get('/title/:title', async (req, res) => {
-  const title = req.params.title;
-
-  const result = Object.values(books).filter(
-    book => book.title === title
-  );
-
-  return res.json(result);
+  try {
+    const title = req.params.title;
+    const result = Object.values(books).filter(
+      book => book.title === title
+    );
+    return res.json(result);
+  } catch (error) {
+    return res.status(500).json({ message: "Error fetching title books" });
+  }
 });
 
 module.exports = router;
